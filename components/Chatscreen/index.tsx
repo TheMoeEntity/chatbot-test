@@ -36,74 +36,36 @@ const Chatscreen = ({ show, close }: any) => {
     }
     setMessages([...messages, { isUser: true, text: input.trim() }]);
     setInput("");
-    // const url = "https://api.openai.com/v1/chat/completions";
-    // const headers = {
-    //   "Content-type": "application/json",
-    //   Authorization: `Bearer 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`,
-    // };
-    // const data = {
-    //   model: "gpt-3.5-turbo",
-    //   messages: [
-    //     {
-    //       role: "user",
-    //       content: input,
-    //     },
-    //   ],
-    // };
-    // await axios
-    //   .post(url, data, { headers })
-    //   .then((response) => {
-    //     console.log(response);
-    //   })
-    //   .catch((error) => {
-    //     console.log(error);
-    //   });
-    const completion = await openai.chat.completions.create({
-      messages: [
+    try {
+      const completion = await openai.chat.completions.create({
+        messages: [
+          {
+            role: "system",
+            content: `You are a highly trained AI chatbot who is to answer only web3 and crypto related questions. Any question asked that isn't web3 related reply that you are only trained to answer web3 related questions. ${input}`,
+          },
+        ],
+        model: "gpt-3.5-turbo",
+      });
+      console.log(completion.choices[0].message.content);
+      const aiMessage =
+        completion.choices[0].message.content ||
+        "Sorry, I couldn't understand your message";
+      setMessages((prev) => [
+        ...prev,
         {
-          role: "system",
-          content: `You are a highly trained AI chatbot who is to answer only web3 related questions. Any question asked that isn't web3 related reply that you are only trained to answer web3 related questions. ${input}`,
+          isUser: false,
+          text: aiMessage,
         },
-      ],
-      model: "gpt-3.5-turbo",
-    });
-
-    console.log(completion.choices[0]);
-    const aiMessage =
-      completion.choices[0].message.content ||
-      "Sorry, I couldn't understand your message";
-    setMessages((prev) => [
-      ...prev,
-      {
-        isUser: false,
-        text: aiMessage,
-      },
-    ]);
-
-    // try {
-    //   const response = await fetch("./api/chat", {
-    //     method: "POST",
-    //     headers: {
-    //       ContentType: "application/json",
-    //     },
-    //     body: JSON.stringify({ message: input, user: "Moses" }),
-    //   });
-    //   const data = await response.json();
-
-    //   const aiMessage =
-    //     data.message || "Sorry, I couldn't understand your message";
-    //   setMessages((prev) => [
-    //     ...prev,
-    //     {
-    //       isUser: false,
-    //       text: aiMessage,
-    //     },
-    //   ]);
-    // } catch (error) {
-    //   enqueueSnackbar("Error fetching AI Response", {
-    //     variant: "success",
-    //   });
-    // }
+      ]);
+    } catch (error) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          isUser: false,
+          text: "Error loading AI response. \n\n" + error,
+        },
+      ]);
+    }
   };
 
   const handleClose = async () => {
