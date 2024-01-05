@@ -3,14 +3,11 @@ import "./chat.css";
 import { useState, useRef, FormEvent } from "react";
 import { useSnackbar } from "notistack";
 import OpenAI from "openai";
-import axios from "axios";
 const openai = new OpenAI({
-  // apiKey: "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",
-  apiKey: "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",
+  apiKey: process.env.NEXT_PUBLIC_NEXTAPI_KEY as string,
   dangerouslyAllowBrowser: true,
-  organization: "org-NiYCH754q0v4JcDTYiN7bCk2",
+  organization: process.env.NEXT_PUBLIC_NEXTORG_KEY as string,
 });
-
 type messageType = {
   isUser: boolean;
   text: string;
