@@ -3,6 +3,7 @@ import "./chat.css";
 import { useState, useRef, FormEvent } from "react";
 import { useSnackbar } from "notistack";
 import OpenAI from "openai";
+import Loader from "../Loader/Loader";
 const openai = new OpenAI({
   apiKey: process.env.NEXT_PUBLIC_NEXTAPI_KEY as string,
   dangerouslyAllowBrowser: true,
@@ -17,6 +18,7 @@ const Chatscreen = ({ show, close }: any) => {
   const [input, setInput] = useState("");
   const { enqueueSnackbar } = useSnackbar();
   const formRef = useRef<HTMLFormElement | null>(null);
+  const [isDone, setIsDone] = useState<boolean>(true);
 
   const handleKeyUp = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (formRef.current) {
@@ -36,6 +38,7 @@ const Chatscreen = ({ show, close }: any) => {
     }
     setMessages([...messages, { isUser: true, text: input.trim() }]);
     setInput("");
+    setIsDone(false);
     try {
       const completion = await openai.chat.completions.create({
         messages: [
@@ -46,7 +49,6 @@ const Chatscreen = ({ show, close }: any) => {
         ],
         model: "gpt-3.5-turbo",
       });
-      console.log(completion.choices[0].message.content);
       const aiMessage =
         completion.choices[0].message.content ||
         "Sorry, I couldn't understand your message";
@@ -57,6 +59,7 @@ const Chatscreen = ({ show, close }: any) => {
           text: aiMessage,
         },
       ]);
+      setIsDone(true);
     } catch (error) {
       setMessages((prev) => [
         ...prev,
@@ -65,68 +68,7 @@ const Chatscreen = ({ show, close }: any) => {
           text: "Error loading AI response. \n\n" + error,
         },
       ]);
-    }
-  };
-
-  const handleClose = async () => {
-    setMessages([]);
-    close();
-    const found: messageType | undefined = messages.find((x) => {
-      const isFound = x.text.includes("Thank you for lodging");
-      return isFound;
-    });
-
-    if (!found) {
-    }
-    if (messages.length > 0 && found !== undefined) {
-      close();
-      let accessToken;
-
-      try {
-        await fetch("./api/create/", {
-          method: "POST",
-          mode: "no-cors",
-          headers: {
-            Accept: "application/json, text/plain, */*",
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + accessToken,
-          },
-          body: JSON.stringify({
-            title: "AI response",
-            description: messages[messages.length - 2].text,
-            is_resolved: false,
-          }),
-        }).then(async (res) => {
-          const isJson = res.headers
-            .get("content-type")
-            ?.includes("application/json");
-          const data = isJson ? await res.json() : null;
-          if (res.status == 401) {
-          }
-          if (!res.ok) {
-            const error = (data && data.message) || res.statusText;
-
-            enqueueSnackbar(
-              "Failed to send complaints: " + JSON.parse(data).message,
-              {
-                variant: "error",
-              }
-            );
-            return Promise.reject(error);
-          } else if (res.ok || res.status === 201 || res.status === 200) {
-            enqueueSnackbar(
-              "Your complaints have been successfully lodged and is being processed.",
-              {
-                variant: "success",
-              }
-            );
-          }
-        });
-      } catch (error) {
-        enqueueSnackbar("Failed to send complaints: " + error, {
-          variant: "error",
-        });
-      }
+      setIsDone(true);
     }
   };
 
@@ -135,9 +77,8 @@ const Chatscreen = ({ show, close }: any) => {
       // style={{ bottom: show ? "0" : "-150%" }}
       className="chat-container open"
     >
-      <div onClick={handleClose} className="close">
-        &times;
-      </div>
+      <Loader done={isDone} />
+      <div className="close">&times;</div>
       <div className="chat-header">
         <div>AI ChatBot</div>
       </div>
