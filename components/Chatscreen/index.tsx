@@ -5,6 +5,8 @@ import { useState, useRef, FormEvent, useEffect } from "react";
 import { useSnackbar } from "notistack";
 import OpenAI from "openai";
 import Loader from "../Loader/Loader";
+import aiImg from "../../public/images/gpt.png";
+import Image from "next/image";
 const openai = new OpenAI({
   apiKey: process.env.NEXT_PUBLIC_NEXTAPI_KEY as string,
   dangerouslyAllowBrowser: true,
@@ -51,12 +53,19 @@ const Chatscreen = ({ show, close }: any) => {
     setMessages([...messages, { isUser: true, text: input.trim() }]);
     setInput("");
     setIsDone(false);
+    // setMessages((prev) => [
+    //   ...prev,
+    //   {
+    //     isUser: false,
+    //     text: "aiMessage bitch",
+    //   },
+    // ]);
     try {
       const completion = await openai.chat.completions.create({
         messages: [
           {
             role: "system",
-            content: `You are a highly trained AI chatbot who is to answer only web3 and crypto related questions. Any question asked that isn't web3 related reply that you are only trained to answer web3 related questions. ${input}`,
+            content: `You are a highly trained AI-powered chatbot named Moe who is to answer only web3 and crypto related questions. Any question asked that isn't web3 related reply that you are only trained to answer web3 related questions. ${input}`,
           },
         ],
         model: "gpt-3.5-turbo",
@@ -80,11 +89,11 @@ const Chatscreen = ({ show, close }: any) => {
           text: "Error loading AI response. \n\n" + error,
         },
       ]);
-      setIsDone(true);
-      scrollToBottom();
-      if (!isBrowser()) return;
-      window.scrollTo({ top: 200, behavior: "smooth" });
     }
+    setIsDone(true);
+    scrollToBottom();
+    if (!isBrowser()) return;
+    window.scrollTo({ top: 200, behavior: "smooth" });
   };
 
   return (
@@ -112,12 +121,29 @@ const Chatscreen = ({ show, close }: any) => {
                 ) : (
                   <span style={{ marginRight: "10px" }}>&#x1F534;</span>
                 )}
-                {x.isUser ? "Moe Man" : "AI Chat"}
+                {x.isUser ? "Moe" : "OpenAI Chatbot"}
               </p>
             </div>
             <p className="chatBox" style={{ paddingTop: "10px" }}>
               {x.text}
             </p>
+
+            {!x.isUser && (
+              <div className="chatImage">
+                <Image
+                  src={aiImg}
+                  alt="logo"
+                  fill={true}
+                  quality={100}
+                  priority={true}
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                />
+              </div>
+            )}
+
+            <div className={`chatBubble ${x.isUser ? "user-flip" : "ai-flip"}`}>
+              <i className="fa-solid fa-comment"></i>
+            </div>
           </div>
         ))}
       </div>
