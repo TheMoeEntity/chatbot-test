@@ -6,9 +6,8 @@ import OpenAI from "openai";
 import axios from "axios";
 const openai = new OpenAI({
   // apiKey: "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",
-  apiKey: "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",
+  apiKey: "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",
   dangerouslyAllowBrowser: true,
-  // organization: "org-Af45xbyUQKKkr3NEJVyMS2gn",
   organization: "org-NiYCH754q0v4JcDTYiN7bCk2",
 });
 
