@@ -1,8 +1,10 @@
 .chat-container {
-  position: fixed;
+  position: relative;
   bottom: 0;
   right: 0;
-  width: 100%;
+  width: 700px;
+  max-width: 100%;
+  margin: 20px auto 0px auto;
   height: 100vh;
   background-color: #30394b;
   /* border: 1px solid #ddd; */
@@ -18,15 +20,17 @@
   position: absolute;
   right: 10px;
   top: 0;
+  display: none;
   font-size: 40px;
   color: white;
   cursor: pointer;
 }
 .chat-container .chat-header {
-  padding: 10px;
+  padding: 20px;
   background-color: #30384b;
   color: white;
   cursor: pointer;
+  box-shadow: 0 2px 4px rgba(59, 71, 92, 0.5);
   text-align: center;
 }
 .chat-container .chat-body {
@@ -42,15 +46,21 @@
   width: 100%;
   height: fit-content;
   color: black;
+  background-color: rgb(233, 233, 233);
 }
 .chat-container .chat-input textarea {
   background-color: white;
-  flex-grow: 1;
+  /* flex-grow: 1; */
   color: black;
   border: 1px solid #ddd;
+  margin-left: 4px;
+  margin-bottom: 4px;
+  margin-top: 4px;
   padding: 15px 10px;
-  height: 96%;
-  width: 90%;
+  min-height: 40px;
+  height: auto;
+  width: 85%;
+  border-radius: 5px;
   outline: none;
 }
 .chat-container .chat-input button {
@@ -62,8 +72,21 @@
 }
 .chat-container .chat-input .send-button {
   position: absolute;
-  bottom: 5px;
-  right: 16px;
+  bottom: 12px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  right: 5px;
+  border-color: #4267b2;
+  border-width: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20099999;
+}
+.chat-container .chat-input .send-button i {
+  color: #4267b2;
+  font-size: 17px;
 }
 .chat-message {
   margin-bottom: 10px;
@@ -83,4 +106,9 @@
 .chatBox {
   padding: 10px 5px;
   line-height: 1.4;
+}
+@media screen and (max-width: 678px) {
+  .chat-container {
+    margin: 0px auto 0px auto;
+  }
 }

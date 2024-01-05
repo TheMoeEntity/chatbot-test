@@ -1,6 +1,7 @@
 "use client";
 import "./chat.css";
-import { useState, useRef, FormEvent } from "react";
+import Script from "next/script";
+import { useState, useRef, FormEvent, useEffect } from "react";
 import { useSnackbar } from "notistack";
 import OpenAI from "openai";
 import Loader from "../Loader/Loader";
@@ -14,11 +15,22 @@ type messageType = {
   text: string;
 };
 const Chatscreen = ({ show, close }: any) => {
+  const isBrowser = () => typeof window !== "undefined";
+  const messagesEndRef = useRef<null | HTMLDivElement>(null);
   const [messages, setMessages] = useState<messageType[]>([]);
   const [input, setInput] = useState("");
   const { enqueueSnackbar } = useSnackbar();
   const formRef = useRef<HTMLFormElement | null>(null);
   const [isDone, setIsDone] = useState<boolean>(true);
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (!isBrowser()) return;
+    window.scrollTo({ top: 200, behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const handleKeyUp = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (formRef.current) {
@@ -69,6 +81,9 @@ const Chatscreen = ({ show, close }: any) => {
         },
       ]);
       setIsDone(true);
+      scrollToBottom();
+      if (!isBrowser()) return;
+      window.scrollTo({ top: 200, behavior: "smooth" });
     }
   };
 
@@ -82,7 +97,7 @@ const Chatscreen = ({ show, close }: any) => {
       <div className="chat-header">
         <div>AI ChatBot</div>
       </div>
-      <div className="chat-body">
+      <div ref={messagesEndRef} className="chat-body">
         {messages.map((x, i) => (
           <div
             key={i}
@@ -111,16 +126,20 @@ const Chatscreen = ({ show, close }: any) => {
           name=""
           id=""
           // cols={30}
-          // rows={10}
-          placeholder="Type message"
+          rows={0}
+          placeholder="Type message..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyUp={(e) => handleKeyUp(e)}
         />
         <button className="send-button" type="submit">
-          Send Message
+          <i className="fa fa-paper-plane" aria-hidden="true"></i>
         </button>
       </form>
+      <Script
+        src="https://kit.fontawesome.com/4ef8c63dd7.js"
+        crossOrigin="anonymous"
+      />
     </div>
   );
 };
