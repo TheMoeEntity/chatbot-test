@@ -19,15 +19,17 @@ type messageType = {
 const Chatscreen = ({ show, close }: any) => {
   const isBrowser = () => typeof window !== "undefined";
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
+  const chatContainer = useRef<null | HTMLDivElement>(null);
   const [messages, setMessages] = useState<messageType[]>([]);
   const [input, setInput] = useState("");
   const { enqueueSnackbar } = useSnackbar();
   const formRef = useRef<HTMLFormElement | null>(null);
   const [isDone, setIsDone] = useState<boolean>(true);
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    if (!isBrowser()) return;
-    window.scrollTo({ top: 200, behavior: "smooth" });
+    if (messagesEndRef.current && chatContainer.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      messagesEndRef.current.scroll(0, messagesEndRef.current.scrollHeight);
+    }
   };
 
   useEffect(() => {
@@ -57,7 +59,7 @@ const Chatscreen = ({ show, close }: any) => {
     //   ...prev,
     //   {
     //     isUser: false,
-    //     text: "aiMessage bitch",
+    //     text: "......",
     //   },
     // ]);
     try {
@@ -73,32 +75,34 @@ const Chatscreen = ({ show, close }: any) => {
       const aiMessage =
         completion.choices[0].message.content ||
         "Sorry, I couldn't understand your message";
-      setMessages((prev) => [
-        ...prev,
-        {
-          isUser: false,
-          text: aiMessage,
-        },
-      ]);
+      setMessages((prev) => {
+        return [
+          ...prev,
+          {
+            isUser: false,
+            text: aiMessage,
+          },
+        ];
+      });
       setIsDone(true);
     } catch (error) {
       setMessages((prev) => [
         ...prev,
         {
           isUser: false,
-          text: "Error loading AI response. \n\n" + error,
+          text: "Error loading AI response. \t\n\n" + error,
         },
       ]);
     }
     setIsDone(true);
-    scrollToBottom();
     if (!isBrowser()) return;
-    window.scrollTo({ top: 200, behavior: "smooth" });
+    scrollToBottom();
   };
 
   return (
     <div
       // style={{ bottom: show ? "0" : "-150%" }}
+      ref={chatContainer}
       className="chat-container open"
     >
       <Loader done={isDone} />
