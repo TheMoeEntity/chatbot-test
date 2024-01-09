@@ -1,103 +1,22 @@
 "use client";
 import "./chat.css";
 import Script from "next/script";
-import { useState, useRef, FormEvent, useEffect } from "react";
-import { useSnackbar } from "notistack";
-import OpenAI from "openai";
 import Loader from "../Loader/Loader";
 import aiImg from "../../public/images/gpt.png";
 import Image from "next/image";
-const openai = new OpenAI({
-  apiKey: process.env.NEXT_PUBLIC_NEXTAPI_KEY as string,
-  dangerouslyAllowBrowser: true,
-  organization: process.env.NEXT_PUBLIC_NEXTORG_KEY as string,
-});
-type messageType = {
-  isUser: boolean;
-  text: string;
-};
+import { useAISubmit, useHandleKeyUp } from "@/Helpers/hooks";
+
 const Chatscreen = ({ show, close }: any) => {
-  const isBrowser = () => typeof window !== "undefined";
-  const messagesEndRef = useRef<null | HTMLDivElement>(null);
-  const chatContainer = useRef<null | HTMLDivElement>(null);
-  const [messages, setMessages] = useState<messageType[]>([]);
-  const [input, setInput] = useState("");
-  const { enqueueSnackbar } = useSnackbar();
-  const formRef = useRef<HTMLFormElement | null>(null);
-  const [isDone, setIsDone] = useState<boolean>(true);
-  const scrollToBottom = () => {
-    if (messagesEndRef.current && chatContainer.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-      messagesEndRef.current.scroll(0, messagesEndRef.current.scrollHeight);
-    }
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const handleKeyUp = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (formRef.current) {
-      if (e.key === "Enter" && !e.shiftKey) {
-        formRef.current.dispatchEvent(
-          new Event("submit", { cancelable: true, bubbles: true })
-        );
-      }
-    }
-  };
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    if (input.trim() === "") {
-      return;
-    }
-    setMessages([...messages, { isUser: true, text: input.trim() }]);
-    setInput("");
-    setIsDone(false);
-    // setMessages((prev) => [
-    //   ...prev,
-    //   {
-    //     isUser: false,
-    //     text: "......",
-    //   },
-    // ]);
-    try {
-      const completion = await openai.chat.completions.create({
-        messages: [
-          {
-            role: "system",
-            content: `You are a highly trained AI-powered chatbot named Moe who is to answer only web3 and crypto related questions. Any question asked that isn't web3 related reply that you are only trained to answer web3 related questions. ${input}`,
-          },
-        ],
-        model: "gpt-3.5-turbo",
-      });
-      const aiMessage =
-        completion.choices[0].message.content ||
-        "Sorry, I couldn't understand your message";
-      setMessages((prev) => {
-        return [
-          ...prev,
-          {
-            isUser: false,
-            text: aiMessage,
-          },
-        ];
-      });
-      setIsDone(true);
-    } catch (error) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          isUser: false,
-          text: "Error loading AI response. \t\n\n" + error,
-        },
-      ]);
-    }
-    setIsDone(true);
-    if (!isBrowser()) return;
-    scrollToBottom();
-  };
+  const { formRef, handleKeyUp } = useHandleKeyUp();
+  const {
+    handleSubmit,
+    isDone,
+    input,
+    chatContainer,
+    messagesEndRef,
+    messages,
+    setInput,
+  } = useAISubmit();
 
   return (
     <div
